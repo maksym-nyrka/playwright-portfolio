@@ -16,7 +16,7 @@ export default defineConfig({
    * Runs once before any test project. Pre-authenticates both roles
    * and saves storageState files so tests can restore sessions instantly.
    */
-  globalSetup: require.resolve('./tests/global.setup'),
+  // globalSetup: require.resolve('./tests/global.setup'),
 
   use: {
     baseURL: process.env.BASE_URL ?? 'https://practicesoftwaretesting.com',

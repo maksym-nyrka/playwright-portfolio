@@ -27,19 +27,6 @@ async function globalSetup(config: FullConfig) {
   const authDir = path.resolve('.auth');
   if (!fs.existsSync(authDir)) fs.mkdirSync(authDir);
 
-  // ── Customer role ────────────────────────────────────────────────────────
-  const customerContext = await browser.newContext();
-  const customerPage = await customerContext.newPage();
-
-  await customerPage.goto(`${baseURL}/auth/login`, { waitUntil: 'domcontentloaded' });
-  await customerPage.locator('[data-test="email"]').fill(process.env.CUSTOMER_EMAIL!);
-  await customerPage.locator('[data-test="password"]').fill(process.env.CUSTOMER_PASSWORD!);
-  await customerPage.locator('[data-test="login-submit"]').click();
-  await customerPage.waitForURL(url => !url.pathname.includes('/auth/login'));
-
-  await customerContext.storageState({ path: '.auth/customer.json' });
-  await customerContext.close();
-
   // ── Admin role ────────────────────────────────────────────────────────────
   const adminContext = await browser.newContext();
   const adminPage = await adminContext.newPage();
@@ -48,10 +35,37 @@ async function globalSetup(config: FullConfig) {
   await adminPage.locator('[data-test="email"]').fill(process.env.ADMIN_EMAIL!);
   await adminPage.locator('[data-test="password"]').fill(process.env.ADMIN_PASSWORD!);
   await adminPage.locator('[data-test="login-submit"]').click();
-  await adminPage.waitForURL(url => !url.pathname.includes('/auth/login'));
+
+  try {
+    await adminPage.waitForSelector('[data-test="nav-menu"]', { state: 'visible', timeout: 30000 });
+  } catch (e) {
+    console.error('Admin login failed. Dumping page content...');
+    fs.writeFileSync('admin_login_fail.html', await adminPage.content());
+    throw e;
+  }
 
   await adminContext.storageState({ path: '.auth/admin.json' });
   await adminContext.close();
+
+  // ── Customer role ────────────────────────────────────────────────────────
+  const customerContext = await browser.newContext();
+  const customerPage = await customerContext.newPage();
+
+  await customerPage.goto(`${baseURL}/auth/login`, { waitUntil: 'domcontentloaded' });
+  await customerPage.locator('[data-test="email"]').fill(process.env.CUSTOMER_EMAIL!);
+  await customerPage.locator('[data-test="password"]').fill(process.env.CUSTOMER_PASSWORD!);
+  await customerPage.locator('[data-test="login-submit"]').click();
+
+  try {
+    await customerPage.waitForSelector('[data-test="nav-menu"]', { state: 'visible', timeout: 30000 });
+  } catch (e) {
+    console.error('Customer login failed. Dumping page content...');
+    fs.writeFileSync('customer_login_fail.html', await customerPage.content());
+    throw e;
+  }
+
+  await customerContext.storageState({ path: '.auth/customer.json' });
+  await customerContext.close();
 
   await browser.close();
 
