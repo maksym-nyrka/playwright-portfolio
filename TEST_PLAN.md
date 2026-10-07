@@ -250,7 +250,7 @@ playwright-portfolio/
 
 ---
 
-### 🔲 Module 5 — Visual Regression
+### ✅ Module 5 — Visual Regression (done)
 **Files:** `tests/visual/`
 
 #### `homepage.visual.spec.ts`
