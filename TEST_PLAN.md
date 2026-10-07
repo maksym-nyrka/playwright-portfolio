@@ -166,7 +166,7 @@ playwright-portfolio/
 
 ---
 
-### 🔲 Module 3 — API Testing
+### ✅ Module 3 — API Testing (done)
 **Files:** `tests/api/`  
 **API Base:** `https://api.practicesoftwaretesting.com`  
 **Swagger:** `/api/documentation`
@@ -221,7 +221,7 @@ playwright-portfolio/
 
 ---
 
-### 🔲 Module 4 — Network Interception & Mocking
+### ✅ Module 4 — Network Interception & Mocking (done)
 **Files:** `tests/mocks/`
 
 #### 4a. `intercept.spec.ts`
@@ -288,13 +288,14 @@ playwright-portfolio/
 
 ---
 
-### 🔲 Module 7 — Advanced Playwright Features
+### ✅ Module 7 — Advanced Playwright Features (done)
 **Files:** `tests/advanced/`
 
 #### 7a. `multi-tab.spec.ts`
 - Open product comparison in a new tab (`context.newPage()`)
 - Share cookies between tabs (same `BrowserContext`)
 - Assert both tabs show correct state
+- Handle popups using `page.waitForEvent('popup')`
 
 **Playwright features:**
 - `context.newPage()` — multi-tab
@@ -307,7 +308,7 @@ playwright-portfolio/
 
 **Playwright features:**
 - `page.waitForEvent('download')` — download handling
-- `download.path()` / `download.suggestedFilename()`
+- `download.path()` / `download.suggestedFilename()` / `download.saveAs()`
 
 #### 7c. `performance.spec.ts`
 - Measure Time to Interactive using `performance.timing`
