@@ -70,13 +70,23 @@ export class HomePage extends BasePage {
     return this.page.locator('label').filter({ hasText: name }).locator('input[name="brand_id"]');
   }
 
-  async search(query: string) {
-    const response = this.page.waitForResponse(
-      (res) => res.url().includes('/products/search') && res.ok(),
-    );
-    await this.searchInput.fill(query);
-    await this.searchSubmit.click();
-    await response;
+  async search(query: string, waitForOk = true) {
+    await this.searchInput.fill(query, { force: true });
+
+    // To ensure the search is triggered regardless of Angular's internal state,
+    // we combine a click and a keyboard Enter press.
+    const [response] = await Promise.all([
+      this.page.waitForResponse((res) => {
+        const isSearch = res.url().includes('/products/search');
+        return waitForOk ? (isSearch && res.ok()) : isSearch;
+      }, { timeout: 15000 }),
+      (async () => {
+        await this.searchSubmit.click({ force: true });
+        await this.page.keyboard.press('Enter');
+      })()
+    ]);
+
+    return response;
   }
 
   async sortBy(value: 'name,asc' | 'name,desc' | 'price,asc' | 'price,desc') {

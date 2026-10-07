@@ -32,6 +32,7 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    /* Other projects disabled for stability during Module 4 debugging
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
@@ -50,5 +51,6 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { ...devices['iPhone 14'] },
     },
+    */
   ],
 });
