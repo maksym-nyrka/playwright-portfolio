@@ -19,62 +19,61 @@ playwright-portfolio/
 │   ├── BasePage.ts                 ✅ done
 │   ├── NavBarComponent.ts          ✅ done
 │   ├── LoginPage.ts                ✅ done
-│   ├── HomePage.ts
-│   ├── ProductPage.ts
-│   ├── CartPage.ts
-│   ├── CheckoutPage.ts
-│   ├── ContactPage.ts
-│   └── AccountPage.ts
+│   ├── HomePage.ts                 ✅ done
+│   ├── ProductPage.ts              ✅ done
+│   ├── CartPage.ts                 ✅ done
+│   ├── CheckoutPage.ts             ✅ done
+│   ├── ContactPage.ts              ✅ done
+│   └── AccountPage.ts             ✅ done
 │
 ├── fixtures/                       # Custom test fixtures
 │   ├── pages.fixture.ts            ✅ done
-│   └── auth.fixture.ts             (worker-scoped API auth token)
+│   └── auth.fixture.ts             ✅ done (worker-scoped API auth token)
+│
+├── mocks/                          # HAR recordings & payload files (NOT test specs)
+│   └── search.har                  ✅ done
+│
+├── for_ai_agents/                  # AI agent context (guidelines, plans)
+│   ├── README.md                   ✅ AI agent onboarding guide
+│   └── TEST_PLAN.md                ✅ this file
 │
 ├── tests/
 │   ├── global.setup.ts             ✅ done
 │   │
-│   ├── auth/
-│   │   └── login.spec.ts           ✅ done (Module 1)
+│   ├── ui/                         # All UI test specs (auth, flows, visual, mocks, advanced)
+│   │   ├── login.spec.ts           ✅ done (Module 1)
+│   │   ├── search.spec.ts          ✅ done (Module 2a)
+│   │   ├── product.spec.ts         ✅ done (Module 2b)
+│   │   ├── cart.spec.ts            ✅ done (Module 2c)
+│   │   ├── checkout.spec.ts        ✅ done (Module 2d)
+│   │   ├── contact.spec.ts         ✅ done (Module 2e)
+│   │   ├── intercept.spec.ts       ✅ done (Module 4a)
+│   │   ├── mock-responses.spec.ts  ✅ done (Module 4b)
+│   │   ├── har-replay.spec.ts      ✅ done (Module 4c) — reads from /mocks/search.har
+│   │   ├── homepage.visual.spec.ts ✅ done (Module 5)
+│   │   ├── product.visual.spec.ts  ✅ done (Module 5)
+│   │   ├── multi-tab.spec.ts       ✅ done (Module 7a)
+│   │   └── downloads.spec.ts       ✅ done (Module 7b)
 │   │
-│   ├── ui/                         # Module 2 — UI flows ✅ done
-│   │   ├── search.spec.ts
-│   │   ├── product.spec.ts
-│   │   ├── cart.spec.ts
-│   │   ├── checkout.spec.ts
-│   │   └── contact.spec.ts
+│   ├── api/                        # API-only test specs (no browser)
+│   │   ├── auth.api.spec.ts        ✅ done (Module 3)
+│   │   ├── products.api.spec.ts    ✅ done (Module 3)
+│   │   ├── cart.api.spec.ts        ✅ done (Module 3)
+│   │   └── orders.api.spec.ts      ✅ done (Module 3)
 │   │
-│   ├── api/                        # Module 3 — API testing
-│   │   ├── auth.api.spec.ts
-│   │   ├── products.api.spec.ts
-│   │   ├── cart.api.spec.ts
-│   │   └── orders.api.spec.ts
-│   │
-│   ├── mocks/                      # Module 4 — Network interception
-│   │   ├── intercept.spec.ts
-│   │   ├── mock-responses.spec.ts
-│   │   └── har-replay.spec.ts
-│   │
-│   ├── visual/                     # Module 5 — Visual regression
-│   │   ├── homepage.visual.spec.ts
-│   │   └── product.visual.spec.ts
-│   │
-│   ├── accessibility/              # Module 6 — Accessibility
-│   │   └── a11y.spec.ts
-│   │
-│   └── advanced/                   # Module 7 — Advanced Playwright
-│       ├── multi-tab.spec.ts
-│       ├── downloads.spec.ts
-│       └── performance.spec.ts
+│   └── performance/                # Performance measurement specs
+│       └── performance.spec.ts     ✅ done (Module 7c)
 │
 ├── utils/
-│   ├── api-client.ts               # Typed API helper wrapping request context
+│   ├── api-client.ts               ✅ done (Typed API helper wrapping request context)
 │   └── test-data.ts                # Test data factory (fake data generators)
 │
-├── .env                            ✅ done
+├── .env                            ✅ done (gitignored — copy from .env.example)
+├── .env.example                    ✅ done
 ├── .gitignore                      ✅ done
 ├── playwright.config.ts            ✅ done
 ├── tsconfig.json                   ✅ done
-└── TEST_PLAN.md                    ✅ this file
+└── README.md                       ✅ done
 ```
 
 ---
@@ -82,7 +81,7 @@ playwright-portfolio/
 ## Modules
 
 ### ✅ Module 1 — Authentication (done)
-**File:** `tests/auth/login.spec.ts`
+**File:** `tests/ui/login.spec.ts`
 
 | Feature | Demonstrated |
 |---|---|

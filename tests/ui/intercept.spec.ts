@@ -20,8 +20,8 @@ test.describe('Network Interception', () => {
     expect(capturedRequest).not.toBeNull();
 
     // Assert request parameters
-    const url = new URL(capturedRequest!.url());
-    const body = JSON.parse(await capturedRequest!.postData() || '{}');
+    const postData = capturedRequest!.postData();
+    const body = postData ? JSON.parse(postData) : {};
 
     expect(capturedRequest!.method()).toBe('QUERY');
     expect(body.q).toBe(searchQuery);

@@ -71,28 +71,64 @@ export class HomePage extends BasePage {
   }
 
   async search(query: string, waitForOk = true) {
-    await this.searchInput.fill(query, { force: true });
+    await this.searchInput.fill(query);
 
-    // To ensure the search is triggered regardless of Angular's internal state,
-    // we combine a click and a keyboard Enter press.
     const [response] = await Promise.all([
       this.page.waitForResponse((res) => {
         const isSearch = res.url().includes('/products/search');
         return waitForOk ? (isSearch && res.ok()) : isSearch;
       }, { timeout: 15000 }),
-      (async () => {
-        await this.searchSubmit.click({ force: true });
-        await this.page.keyboard.press('Enter');
-      })()
+      this.searchSubmit.click(),
     ]);
 
     return response;
   }
 
   async sortBy(value: 'name,asc' | 'name,desc' | 'price,asc' | 'price,desc') {
-    const firstPrice = await this.productPrices.first().innerText();
+    const responsePromise = this.page.waitForResponse(
+      (res) => res.url().includes('/products') && res.ok(),
+      { timeout: 10000 }
+    );
+
     await this.sortSelect.selectOption(value);
-    await expect(this.productPrices.first()).not.toHaveText(firstPrice);
+    await responsePromise;
+
+    const [field, direction] = value.split(',') as ['name' | 'price', 'asc' | 'desc'];
+
+    /**
+     * The API response arrives before Angular re-renders the product grid, so
+     * reading the list right after the response can return the previous order.
+     * Poll until the visible list actually reflects the requested sort.
+     */
+    const isSorted = (values: Array<string | number>) => {
+      const sorted = [...values].sort((a, b) => {
+        const result =
+          typeof a === 'number' && typeof b === 'number'
+            ? a - b
+            : String(a).trim().localeCompare(String(b).trim());
+        return direction === 'asc' ? result : -result;
+      });
+      return values.join('|') === sorted.join('|');
+    };
+
+    await expect
+      .poll(
+        async () => {
+          const texts = await (field === 'price'
+            ? this.productPrices
+            : this.productNames
+          ).allTextContents();
+          const values =
+            field === 'price'
+              ? texts.map((text) => Number(text.replace(/[^0-9.]/g, '')))
+              : texts.map((text) => text.trim());
+          return values.length > 0 && isSorted(values);
+        },
+        { timeout: 10000, message: `product list should re-render sorted by ${value}` },
+      )
+      .toBe(true);
+
+    await this.productCards.first().waitFor({ state: 'visible' });
   }
 
   async filterByCategory(name: string) {

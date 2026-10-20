@@ -4,23 +4,17 @@ test.describe('Advanced: Performance', () => {
   test('should measure page load performance metrics', async ({ page }) => {
     await page.goto('/');
 
-    // Extract performance metrics using the Navigation Timing API
-    const performanceTiming = await page.evaluate(() => {
-      const t = window.performance.timing;
-      return {
-        loadEventEnd: t.loadEventEnd,
-        loadEventStart: t.loadEventStart,
-        domComplete: t.domComplete,
-        domInteractive: t.domInteractive,
-        navigationStart: t.navigationStart,
-      };
+    // Extract performance metrics using the modern W3C Navigation Timing Level 2 API
+    const loadTime = await page.evaluate(() => {
+      const [nav] = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      if (!nav) return 0;
+      return nav.loadEventEnd > 0 ? nav.loadEventEnd - nav.startTime : nav.duration;
     });
 
-    // Calculate Page Load Time (PLT)
-    const loadTime = performanceTiming.loadEventEnd - performanceTiming.navigationStart;
-    console.log(`Page Load Time: ${loadTime}ms`);
+    console.log(`Page Load Time: ${Math.round(loadTime)}ms`);
 
-    // Assert that the page loads within a reasonable threshold for a portfolio demo
+    // Assert that the page loads within a reasonable threshold
+    expect(loadTime).toBeGreaterThan(0);
     expect(loadTime).toBeLessThan(10000);
   });
 

@@ -1,16 +1,19 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, request } from '@playwright/test';
 import { ApiClient } from '../utils/api-client';
 
-type ApiFixtures = {
+type TestFixtures = {
   apiClient: ApiClient;
+};
+
+type WorkerFixtures = {
   apiToken: string;
 };
 
-export const test = base.extend<{ apiToken: string }, { apiClient: ApiClient }>({
+export const test = base.extend<TestFixtures, WorkerFixtures>({
   // Worker-scoped fixture: authenticates once per worker
   apiToken: [async ({}, use) => {
-    const request = await base.request.newContext();
-    const client = new ApiClient(request);
+    const requestContext = await request.newContext();
+    const client = new ApiClient(requestContext);
 
     const { response, body } = await client.login({
       email: process.env.CUSTOMER_EMAIL || 'customer@practicesoftwaretesting.com',
@@ -22,7 +25,7 @@ export const test = base.extend<{ apiToken: string }, { apiClient: ApiClient }>(
     }
 
     await use(body.access_token);
-    await request.dispose();
+    await requestContext.dispose();
   }, { scope: 'worker' }],
 
   // Test-scoped fixture: provides the ApiClient

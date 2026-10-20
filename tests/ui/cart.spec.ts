@@ -34,7 +34,7 @@ test.describe('Cart', () => {
     await navBar.cartLink.click();
     await cartPage.removeFirstItem();
     await expect(cartPage.productTitle).toHaveCount(0);
-    await expect(cartPage.page.getByText(/empty/i)).toBeVisible();
+    await expect(cartPage.emptyMessage).toBeVisible();
   });
 
   test('proceed to checkout button is available', async ({ navBar, cartPage }) => {

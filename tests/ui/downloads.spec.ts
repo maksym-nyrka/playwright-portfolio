@@ -3,10 +3,10 @@ import fs from 'fs';
 import path from 'path';
 
 test.describe('Advanced: Downloads', () => {
-  test('should successfully download a file', async ({ page }) => {
+  test('should successfully download a file', async ({ page }, testInfo) => {
     await page.goto('/');
 
-    // Trigger a download using a blob URL which is more stable in Playwright
+    // Trigger a download using a blob URL
     const downloadPromise = page.waitForEvent('download');
 
     await page.evaluate(() => {
@@ -24,14 +24,11 @@ test.describe('Advanced: Downloads', () => {
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('test-download.txt');
 
-    const filePath = path.join(__dirname, 'test-download.txt');
+    // Save to test-isolated output directory
+    const filePath = testInfo.outputPath('test-download.txt');
     await download.saveAs(filePath);
 
     expect(fs.existsSync(filePath)).toBe(true);
-
-    // Cleanup
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    expect(fs.readFileSync(filePath, 'utf-8')).toBe('Hello Playwright!');
   });
 });

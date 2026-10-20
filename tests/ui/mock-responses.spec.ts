@@ -17,7 +17,7 @@ test.describe('Response Mocking', () => {
   ];
 
   test('should render custom product data from mock response', async ({ page, homePage }) => {
-    await page.goto('/');
+    await homePage.goto();
     // Intercept product search and return fake data
     await page.route('**/products/search*', async route => {
       await route.fulfill({
@@ -34,7 +34,7 @@ test.describe('Response Mocking', () => {
   });
 
   test('should display error message when server returns 500', async ({ page, homePage }) => {
-    await page.goto('/');
+    await homePage.goto();
     // Intercept product search and return 500 error
     await page.route('**/products/search*', async route => {
       await route.fulfill({
@@ -55,7 +55,7 @@ test.describe('Response Mocking', () => {
   });
 
   test('should display "no results" message when product list is empty', async ({ page, homePage }) => {
-    await page.goto('/');
+    await homePage.goto();
     // Intercept product search and return empty array
     await page.route('**/products/search*', async route => {
       await route.fulfill({

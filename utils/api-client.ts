@@ -18,17 +18,36 @@ export interface RegisterRequest {
   last_name: string;
 }
 
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug?: string;
+}
+
+export interface ProductBrand {
+  id: string;
+  name: string;
+  slug?: string;
+}
+
+export interface ProductImage {
+  id: string;
+  by_name?: string;
+  file_name?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
   sku: string;
-  category: string;
-  brand: string;
-  imageUrl: string;
+  category: ProductCategory;
+  brand: ProductBrand;
+  product_image?: ProductImage;
+  imageUrl?: string;
   stock: number;
-  co2Rating: number;
+  co2Rating?: number;
 }
 
 export interface Cart {
@@ -47,11 +66,22 @@ export interface CartItem {
 
 export interface Invoice {
   id: string;
-  userId: string;
-  orderDate: string;
-  totalAmount: number;
+  user_id?: string;
+  invoice_number?: string;
+  invoice_date?: string;
+  total?: number;
+  totalAmount?: number;
   status: string;
-  items: CartItem[];
+  invoicelines?: any[];
+}
+
+export interface PostcodeLookup {
+  street: string;
+  house_number: string;
+  city: string;
+  state: string;
+  country: string;
+  postcode: string;
 }
 
 export class ApiClient {
@@ -77,6 +107,10 @@ export class ApiClient {
       headers,
     });
 
+    if (response.status() === 204 || response.headers()['content-length'] === '0') {
+      return { response, body: {} as T };
+    }
+
     const contentType = response.headers()['content-type'];
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
@@ -97,72 +131,117 @@ export class ApiClient {
 
   // --- Auth Resource (on base host) ---
   async login(data: LoginRequest): Promise<{ response: APIResponse; body: LoginResponse }> {
-    return this.requestHelper<LoginResponse>('POST', '/users/login');
+    return this.requestHelper<LoginResponse>('POST', '/users/login', { data });
   }
 
   async register(data: RegisterRequest): Promise<{ response: APIResponse; body: any }> {
-    return this.requestHelper<any>('POST', '/users/register');
+    return this.requestHelper<any>('POST', '/users/register', { data });
   }
 
-  // --- Products Resource (on /api path) ---
+  // --- Products Resource ---
   async getProducts(): Promise<{ response: APIResponse; body: Product[] }> {
-    const { response, body } = await this.requestHelper<{ data: Product[] }>('GET', '/api/products');
+    const { response, body } = await this.requestHelper<{ data: Product[] }>('GET', '/products');
     return { response, body: body.data };
   }
 
   async getProductById(id: string): Promise<{ response: APIResponse; body: Product }> {
-    return this.requestHelper<Product>('GET', `/api/products/${id}`);
+    return this.requestHelper<Product>('GET', `/products/${id}`);
   }
 
   async searchProducts(query: string): Promise<{ response: APIResponse; body: Product[] }> {
-    const { response, body } = await this.requestHelper<{ data: Product[] }>('GET', `/api/products/search?q=${encodeURIComponent(query)}`);
+    const { response, body } = await this.requestHelper<{ data: Product[] }>('GET', `/products/search?q=${encodeURIComponent(query)}`);
     return { response, body: body.data };
   }
 
-  async createProduct(data: Partial<Product>, token: string): Promise<{ response: APIResponse; body: Product }> {
-    return this.requestHelper<Product>('POST', '/api/products', { data, token });
+  async createProduct(data: Record<string, any>, token: string): Promise<{ response: APIResponse; body: Product }> {
+    return this.requestHelper<Product>('POST', '/products', { data, token });
   }
 
-  // --- Cart Resource (on /api path) ---
-  async createCart(token: string): Promise<{ response: APIResponse; body: Cart }> {
-    return this.requestHelper<Cart>('POST', '/api/carts', { token });
+  // --- Cart Resource ---
+  async createCart(token?: string): Promise<{ response: APIResponse; body: any }> {
+    return this.requestHelper<any>('POST', '/carts', { token });
   }
 
-  async getCart(cartId: string, token: string): Promise<{ response: APIResponse; body: Cart }> {
-    return this.requestHelper<Cart>('GET', `/api/carts/${cartId}`, { token });
+  async getCart(cartId: string, token?: string): Promise<{ response: APIResponse; body: any }> {
+    return this.requestHelper<any>('GET', `/carts/${cartId}`, { token });
   }
 
-  async addItemToCart(cartId: string, item: { productId: string; quantity: number }, token: string): Promise<{ response: APIResponse; body: CartItem }> {
-    return this.requestHelper<CartItem>('POST', `/api/carts/${cartId}/items`, { data: item, token });
+  async addItemToCart(cartId: string, item: { productId: string; quantity: number }, token?: string): Promise<{ response: APIResponse; body: any }> {
+    return this.requestHelper<any>('POST', `/carts/${cartId}`, {
+      data: {
+        product_id: item.productId,
+        quantity: item.quantity,
+      },
+      token,
+    });
   }
 
-  async updateCartItem(cartId: string, itemId: string, quantity: number, token: string): Promise<{ response: APIResponse; body: CartItem }> {
-    return this.requestHelper<CartItem>('PUT', `/api/carts/${cartId}/items/${itemId}`, { data: { quantity }, token });
+  async updateCartItem(cartId: string, productId: string, quantity: number, token?: string): Promise<{ response: APIResponse; body: any }> {
+    return this.requestHelper<any>('PUT', `/carts/${cartId}/product/quantity`, {
+      data: {
+        product_id: productId,
+        quantity,
+      },
+      token,
+    });
   }
 
-  async removeCartItem(cartId: string, itemId: string, token: string): Promise<{ response: APIResponse; body: any }> {
-    return this.requestHelper<any>('DELETE', `/api/carts/${cartId}/items/${itemId}`, { token });
+  async removeCartItem(cartId: string, productId: string, token?: string): Promise<{ response: APIResponse; body: any }> {
+    return this.requestHelper<any>('DELETE', `/carts/${cartId}/product/${productId}`, { token });
   }
 
-  // --- Orders/Invoices Resource (on /api path) ---
-  async getInvoices(token: string): Promise<{ response: APIResponse; body: Invoice[] }> {
-    const { response, body } = await this.requestHelper<{ data: Invoice[] }>('GET', '/api/invoices', { token });
-    return { response, body: body.data };
+  // --- Address Resource ---
+  /**
+   * Resolve the city/state the API associates with a country + postcode.
+   * The checkout endpoint cross-checks the billing address against this data,
+   * so tests must use the returned values instead of hardcoded cities.
+   */
+  async lookupPostcode(
+    country: string,
+    postcode: string,
+    houseNumber?: string,
+  ): Promise<{ response: APIResponse; body: PostcodeLookup }> {
+    const params = new URLSearchParams({ country, postcode });
+    if (houseNumber) params.set('house_number', houseNumber);
+    return this.requestHelper<PostcodeLookup>('GET', `/postcode-lookup?${params.toString()}`);
+  }
+
+  // --- Orders/Invoices Resource ---
+  async getInvoices(
+    token: string,
+  ): Promise<{ response: APIResponse; body: Invoice[]; total: number }> {
+    const { response, body } = await this.requestHelper<{ data: Invoice[]; total?: number }>(
+      'GET',
+      '/invoices',
+      { token },
+    );
+    return { response, body: body.data, total: body.total ?? body.data.length };
   }
 
   async getInvoiceById(id: string, token: string): Promise<{ response: APIResponse; body: Invoice }> {
-    return this.requestHelper<Invoice>('GET', `/api/invoices/${id}`, { token });
+    return this.requestHelper<Invoice>('GET', `/invoices/${id}`, { token });
   }
 
-  async checkout(details: { cartId: string; paymentMethod: string; paymentDetails: string; billingStreet: string; billingCity: string; billingCountry: string }, token: string): Promise<{ response: APIResponse; body: Invoice }> {
-    return this.requestHelper<Invoice>('POST', '/api/invoices', {
+  async checkout(details: {
+    cartId: string;
+    paymentMethod: string;
+    paymentDetails?: Record<string, any>;
+    billingStreet: string;
+    billingCity: string;
+    billingState?: string;
+    billingCountry: string;
+    billingPostalCode?: string;
+  }, token?: string): Promise<{ response: APIResponse; body: Invoice }> {
+    return this.requestHelper<Invoice>('POST', '/invoices', {
       data: {
         cart_id: details.cartId,
         payment_method: details.paymentMethod,
-        payment_details: details.paymentDetails,
+        payment_details: details.paymentDetails || {},
         billing_street: details.billingStreet,
         billing_city: details.billingCity,
-        billing_country: details.billingCountry,
+        billing_state: details.billingState || 'Utrecht',
+        billing_country: details.billingCountry || 'The Netherlands',
+        billing_postal_code: details.billingPostalCode || '1122AB',
       },
       token,
     });

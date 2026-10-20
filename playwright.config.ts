@@ -29,27 +29,39 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
+      testIgnore: /.*\.setup\.ts/,
     },
-    /* Other projects disabled for stability during Module 4 debugging
+    /* Cross-browser configurations kept for future multi-browser runs:
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      dependencies: ['setup'],
+      testIgnore: /.*\.setup\.ts/,
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      dependencies: ['setup'],
+      testIgnore: /.*\.setup\.ts/,
     },
-
-    // ── Mobile viewports ──────────────────────────────────────────────────
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
+      dependencies: ['setup'],
+      testIgnore: /.*\.setup\.ts/,
     },
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 14'] },
+      dependencies: ['setup'],
+      testIgnore: /.*\.setup\.ts/,
     },
     */
   ],

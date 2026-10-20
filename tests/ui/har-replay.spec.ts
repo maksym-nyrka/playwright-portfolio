@@ -4,7 +4,7 @@ import path from 'path';
 test.describe.configure({ mode: 'serial' });
 
 test.describe('HAR Replay', () => {
-  const harPath = path.join(__dirname, 'search.har');
+  const harPath = path.resolve(__dirname, '../../mocks/search.har');
 
   test('should record a product search session to HAR', async ({ page, homePage }) => {
     await page.goto('/');

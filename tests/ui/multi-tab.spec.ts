@@ -1,10 +1,11 @@
 import { test, expect } from '../../fixtures/pages.fixture';
+import { HomePage } from '../../pages/HomePage';
 
 test.describe('Advanced: Multi-Tab & Contexts', () => {
-  test('should maintain session state across multiple tabs', async ({ browser, context, homePage }) => {
+  test('should maintain session state across multiple tabs', async ({ context }) => {
     // 1. Open the first tab and go to home
     const page1 = await context.newPage();
-    const homePage1 = new (require('../../pages/HomePage').HomePage)(page1);
+    const homePage1 = new HomePage(page1);
     await homePage1.goto();
 
     // 2. Open a second tab
@@ -22,18 +23,16 @@ test.describe('Advanced: Multi-Tab & Contexts', () => {
     await page2.close();
   });
 
-  test('should handle popup windows correctly', async ({ page, homePage }) => {
+  test('should handle popup windows correctly', async ({ page }) => {
     await page.goto('/');
 
-    // The site doesn't have many popups, but we can simulate/test the mechanism
-    // by triggering a link that opens in a new tab if available,
-    // or by using a programmatic popup for demonstration.
+    // Open a popup window within the application domain to avoid flaky external dependencies
     const popupPromise = page.waitForEvent('popup');
-    await page.evaluate(() => window.open('https://google.com'));
+    await page.evaluate(() => window.open('/contact'));
     const popup = await popupPromise;
 
     await expect(popup).toBeDefined();
-    await expect(popup).toHaveURL(/.*google.com/);
+    await expect(popup).toHaveURL(/.*\/contact/);
 
     await popup.close();
   });

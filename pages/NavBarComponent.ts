@@ -42,6 +42,11 @@ export class NavBarComponent extends BasePage {
   }
 
   async isLoggedIn(): Promise<boolean> {
-    return this.accountDropdown.isVisible();
+    try {
+      await this.accountDropdown.waitFor({ state: 'visible', timeout: 5000 });
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
