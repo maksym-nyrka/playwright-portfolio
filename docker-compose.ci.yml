@@ -14,26 +14,19 @@ services:
 
   laravel-api:
     image: testsmith/practice-software-testing-${SPRINT:-sprint5}-api
+    ports:
+      - "8091:8091"
+    command: php artisan serve --host=0.0.0.0 --port=8091
     environment:
       PHP_OPCACHE_VALIDATE_TIMESTAMPS: "1"
+      PHP_CLI_SERVER_WORKERS: "4"
       DB_PORT: "3306"
       DB_HOST: mariadb
       host: localhost
       DISABLE_LOGGING: "true"
-    volumes:
-      - laravel-app-code:/var/www
     depends_on:
       mariadb:
         condition: service_healthy
-
-  web:
-    image: testsmith/practice-software-testing-web
-    ports:
-      - "8091:80"
-    volumes:
-      - laravel-app-code:/var/www
-    depends_on:
-      - laravel-api
 
   angular-ui:
     image: testsmith/practice-software-testing-${SPRINT:-sprint5}-ui
@@ -42,7 +35,4 @@ services:
     command: >
       bash -c "ng serve --host 0.0.0.0 --port 4200"
     depends_on:
-      - web
-
-volumes:
-  laravel-app-code:
+      - laravel-api
