@@ -1,6 +1,6 @@
 # 🎭 Playwright Automation Portfolio
 
-[![Playwright Tests](https://github.com/actions/workflows/playwright.yml/badge.svg)](https://github.com/)
+[![Playwright Tests](https://github.com/maksym-nyrka/playwright-portfolio/actions/workflows/playwright.yml/badge.svg)](https://github.com/maksym-nyrka/playwright-portfolio/actions/workflows/playwright.yml)
 [![Playwright](https://img.shields.io/badge/Playwright-v1.63.0-45ba4b?logo=playwright)](https://playwright.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4.5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green?logo=node.js)](https://nodejs.org/)
@@ -74,7 +74,7 @@ playwright-portfolio/
 ### 2. Installation
 Clone the repository and install dependencies:
 ```bash
-git clone https://github.com/your-username/playwright-portfolio.git
+git clone https://github.com/maksym-nyrka/playwright-portfolio.git
 cd playwright-portfolio
 npm install
 ```
@@ -118,7 +118,7 @@ ADMIN_PASSWORD=welcome01
 
 ## 📊 Modules & Coverage
 
-### 1. Authentication (`tests/auth/login.spec.ts`)
+### 1. Authentication (`tests/ui/login.spec.ts`)
 - Parameterized negative tests for invalid, missing, and malformed credentials.
 - HTML5 client-side constraint validation (`aria-invalid` assertions).
 - Pre-authenticated session reuse via `test.use({ storageState: '.auth/customer.json' })`.
@@ -136,18 +136,18 @@ ADMIN_PASSWORD=welcome01
 - Cart lifecycle: creation, item additions, quantity modifications, and item deletion.
 - Invoices & order history queries with authenticated bearer tokens.
 
-### 4. Network Interception & HAR Replay (`tests/mocks/`)
+### 4. Network Interception & HAR Replay (`tests/ui/intercept.spec.ts`, `tests/ui/mock-responses.spec.ts`, `tests/ui/har-replay.spec.ts`)
 - Captures and asserts HTTP `QUERY` search requests and payloads.
 - Intercepts requests using `page.route()` to test 500 internal server error fallbacks and empty search states.
 - Blocks third-party tracking/analytics scripts without breaking page functionality.
 - **Offline Golden HAR Replay**: Records network sessions and replays them offline using `page.routeFromHAR()`.
 
-### 5. Visual Regression (`tests/visual/`)
+### 5. Visual Regression (`tests/ui/*.visual.spec.ts`)
 - Baseline snapshot comparisons for homepage and product detail views.
 - Dynamic element masking (prices, live inventory, rotating content) to prevent flaky diffs.
 - Component-level snapshots (e.g., CO₂ rating badges).
 
-### 6. Advanced Playwright Features (`tests/advanced/`)
+### 6. Advanced Playwright Features (`tests/ui/multi-tab.spec.ts`, `tests/ui/downloads.spec.ts`, `tests/performance/performance.spec.ts`)
 - **Multi-Tab**: Session state propagation across multiple tabs in a single `BrowserContext` and popup handling.
 - **Downloads**: Verifying filename suggestions, saving streams to isolated test directories, and asserting file contents.
 - **Performance**: Automated audits using W3C Navigation Timing API (`loadEventEnd`, `startTime`) and network request profiling.
@@ -159,5 +159,7 @@ ADMIN_PASSWORD=welcome01
 The project includes a ready-to-run GitHub Actions workflow ([`.github/workflows/playwright.yml`](.github/workflows/playwright.yml)) that:
 1. Checks out the code and sets up Node.js with dependency caching.
 2. Runs TypeScript type checking (`npx tsc --noEmit`).
-3. Executes Playwright tests with automatic retries and trace recordings on failure.
+3. Executes the UI, API, and performance suites with automatic retries and trace recordings on failure.
 4. Archives and publishes the Playwright HTML Report as a downloadable artifact.
+
+Visual regression specs are excluded from the Linux CI job because the committed baselines are macOS-only (`*-chromium-darwin.png`). Run `npm test` locally to exercise them, or add Linux baselines to enable them in CI.
