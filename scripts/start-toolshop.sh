@@ -5,12 +5,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE=(docker compose -p playwright-ci -f "$ROOT_DIR/docker-compose.ci.yml")
 
 export SPRINT="${SPRINT:-sprint5}"
+LOG_PID=""
 
 cleanup() {
-  echo "=== Laravel API logs ==="
-  "${COMPOSE[@]}" logs --no-color --tail=300 laravel-api || true
-  echo "=== Angular UI logs ==="
-  "${COMPOSE[@]}" logs --no-color --tail=100 angular-ui || true
+  if [ -n "$LOG_PID" ]; then
+    kill "$LOG_PID" >/dev/null 2>&1 || true
+  fi
   echo "Stopping local Toolshop stack..."
   "${COMPOSE[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
 }
@@ -18,6 +18,10 @@ trap cleanup EXIT INT TERM
 
 echo "Starting local Toolshop stack..."
 "${COMPOSE[@]}" up -d --pull missing
+
+# Stream API logs into Playwright's webServer output so failures are visible.
+"${COMPOSE[@]}" logs -f --no-color laravel-api &
+LOG_PID=$!
 
 echo "Waiting for MariaDB..."
 mariadb_ready=false
