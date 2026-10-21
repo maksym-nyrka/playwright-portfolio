@@ -55,7 +55,7 @@ test.describe('Checkout — authenticated customer', () => {
 });
 
 test.describe('Checkout — guest', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: '.auth/guest.json' });
 
   test('guest can start checkout after filling identity', async ({
     homePage,

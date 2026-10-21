@@ -13,7 +13,7 @@ import { contactMessage } from '../../utils/test-data';
 const emptyAttachment = path.join(__dirname, 'files', 'empty.txt');
 
 test.describe('Contact form', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: '.auth/guest.json' });
 
   test('submit a valid contact message', async ({ contactPage }) => {
     await contactPage.goto();

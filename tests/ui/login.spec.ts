@@ -15,7 +15,7 @@ import { test, expect } from '../../fixtures/pages.fixture';
 const BASE_URL = process.env.BASE_URL ?? 'https://practicesoftwaretesting.com';
 
 test.describe('Login — unauthenticated flows', () => {
-  test.use({ storageState: { cookies: [], origins: [] } }); // ensure clean state
+  test.use({ storageState: '.auth/guest.json' }); // clean auth, keep Cloudflare clearance
 
   test('should show error for invalid credentials', async ({ loginPage }) => {
     await loginPage.goto();

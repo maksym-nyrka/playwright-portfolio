@@ -10,7 +10,7 @@ import { test, expect } from '../../fixtures/pages.fixture';
  */
 
 test.describe('Product detail — guest', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: '.auth/guest.json' });
 
   test('navigate from search results to product detail', async ({ homePage, productPage }) => {
     await homePage.goto();

@@ -9,7 +9,7 @@ import { test, expect } from '../../fixtures/pages.fixture';
  */
 
 test.describe('Cart', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: '.auth/guest.json' });
 
   test.beforeEach(async ({ homePage, productPage }) => {
     await homePage.goto();
