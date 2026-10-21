@@ -1,7 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
+import { appBaseURL, useLocalToolshop } from './utils/env';
 
 export default defineConfig({
   testDir: './tests',
@@ -18,8 +16,25 @@ export default defineConfig({
    */
   // globalSetup: require.resolve('./tests/global.setup'),
 
+  /**
+   * GitHub-hosted runners are challenged by Cloudflare on the live demo.
+   * Start an isolated Toolshop instance for CI and point the suite at it.
+   * `scripts/start-toolshop.sh` keeps running until Playwright shuts it down,
+   * then removes the containers and volumes it created.
+   */
+  webServer: useLocalToolshop
+    ? {
+        command: 'bash scripts/start-toolshop.sh',
+        url: appBaseURL,
+        reuseExistingServer: false,
+        timeout: 15 * 60 * 1000,
+        stdout: 'pipe',
+        stderr: 'pipe',
+      }
+    : undefined,
+
   use: {
-    baseURL: process.env.BASE_URL ?? 'https://practicesoftwaretesting.com',
+    baseURL: appBaseURL,
     // Site uses data-test="..." not data-testid="..."
     testIdAttribute: 'data-test',
     trace: 'on-first-retry',

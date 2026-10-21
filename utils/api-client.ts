@@ -1,4 +1,5 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
+import { apiBaseURL } from './env';
 
 export interface LoginRequest {
   email: string;
@@ -92,7 +93,7 @@ export class ApiClient {
     endpoint: string,
     options: { data?: any; token?: string; baseURL?: string } = {}
   ): Promise<{ response: APIResponse; body: T }> {
-    const baseUrl = options.baseURL || 'https://api.practicesoftwaretesting.com';
+    const baseUrl = options.baseURL || apiBaseURL;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };

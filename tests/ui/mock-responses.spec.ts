@@ -84,7 +84,7 @@ test.describe('Response Mocking', () => {
     await page.goto('/');
 
     // Verify the page still loads and core functionality works
-    await expect(page).toHaveURL(/.*practicesoftwaretesting.com/);
+    await expect(page).toHaveURL(/\/$/);
     await expect(homePage.searchInput).toBeVisible();
   });
 });

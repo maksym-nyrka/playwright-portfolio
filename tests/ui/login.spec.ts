@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixtures/pages.fixture';
+import { appBaseURL } from '../../utils/env';
 
 /**
  * AUTH — Login Tests
@@ -11,8 +12,6 @@ import { test, expect } from '../../fixtures/pages.fixture';
  *  - Soft assertions
  *  - Parameterised tests with test.each
  */
-
-const BASE_URL = process.env.BASE_URL ?? 'https://practicesoftwaretesting.com';
 
 test.describe('Login — unauthenticated flows', () => {
   test.use({ storageState: '.auth/guest.json' }); // clean auth, keep Cloudflare clearance
@@ -72,14 +71,14 @@ test.describe('Login — pre-authenticated customer session', () => {
   test.use({ storageState: '.auth/customer.json' });
 
   test('customer should see account menu after session restore', async ({ page, navBar }) => {
-    await page.goto(BASE_URL);
+    await page.goto(appBaseURL);
     await expect(navBar.accountMenu).toBeVisible();
   });
 
   test('customer should be able to log out', async ({ page, navBar }) => {
-    await page.goto(BASE_URL);
+    await page.goto(appBaseURL);
     await navBar.logout();
     // Site redirects to homepage after sign-out
-    await expect(page).toHaveURL(BASE_URL + '/');
+    await expect(page).toHaveURL(appBaseURL + '/');
   });
 });

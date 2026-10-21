@@ -159,7 +159,10 @@ ADMIN_PASSWORD=welcome01
 The project includes a ready-to-run GitHub Actions workflow ([`.github/workflows/playwright.yml`](.github/workflows/playwright.yml)) that:
 1. Checks out the code and sets up Node.js with dependency caching.
 2. Runs TypeScript type checking (`npx tsc --noEmit`).
-3. Executes the UI, API, and performance suites with automatic retries and trace recordings on failure.
-4. Archives and publishes the Playwright HTML Report as a downloadable artifact.
+3. Starts an isolated Toolshop stack with Docker (`docker-compose.ci.yml` and `scripts/start-toolshop.sh`).
+4. Executes the UI, API, and performance suites against `http://localhost:4200` with automatic retries and trace recordings on failure.
+5. Archives and publishes the Playwright HTML Report as a downloadable artifact.
+
+CI uses a local Toolshop instance because GitHub-hosted runner IPs are challenged by Cloudflare before the live demo loads. Local runs still default to `https://practicesoftwaretesting.com`; set `BASE_URL=http://localhost:4200` and `API_BASE_URL=http://localhost:8091` to point them at the local stack.
 
 Visual regression specs are excluded from the Linux CI job because the committed baselines are macOS-only (`*-chromium-darwin.png`). Run `npm test` locally to exercise them, or add Linux baselines to enable them in CI.

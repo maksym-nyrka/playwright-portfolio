@@ -15,8 +15,8 @@ test.describe('Advanced: Multi-Tab & Contexts', () => {
     await page2.goto('/');
 
     // Assert that both tabs are on the home page
-    await expect(page1).toHaveURL(/.*practicesoftwaretesting.com/);
-    await expect(page2).toHaveURL(/.*practicesoftwaretesting.com/);
+    await expect(page1).toHaveURL(/\/$/);
+    await expect(page2).toHaveURL(/\/$/);
 
     // Close tabs
     await page1.close();
