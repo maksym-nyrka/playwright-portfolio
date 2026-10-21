@@ -24,7 +24,7 @@ services:
       DB_HOST: mariadb
       host: localhost
       APP_DEBUG: "true"
-      LOG_CHANNEL: stderr
+      LOG_CHANNEL: stack
       LOG_LEVEL: debug
       CACHE_DRIVER: file
       SESSION_DRIVER: file

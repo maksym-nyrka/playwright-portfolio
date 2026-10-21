@@ -6,11 +6,14 @@ COMPOSE=(docker compose -p playwright-ci -f "$ROOT_DIR/docker-compose.ci.yml")
 
 export SPRINT="${SPRINT:-sprint5}"
 LOG_PID=""
+APP_LOG_PID=""
 
 cleanup() {
-  if [ -n "$LOG_PID" ]; then
-    kill "$LOG_PID" >/dev/null 2>&1 || true
-  fi
+  for pid in "$LOG_PID" "$APP_LOG_PID"; do
+    if [ -n "$pid" ]; then
+      kill "$pid" >/dev/null 2>&1 || true
+    fi
+  done
   echo "Stopping local Toolshop stack..."
   "${COMPOSE[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
 }
@@ -22,6 +25,10 @@ echo "Starting local Toolshop stack..."
 # Stream API logs into Playwright's webServer output so failures are visible.
 "${COMPOSE[@]}" logs -f --no-color laravel-api &
 LOG_PID=$!
+
+# Application exceptions go to storage/logs/laravel.log; tail that too.
+"${COMPOSE[@]}" exec -T laravel-api sh -c 'mkdir -p storage/logs && touch storage/logs/laravel.log && tail -n +1 -F storage/logs/laravel.log' &
+APP_LOG_PID=$!
 
 echo "Waiting for MariaDB..."
 mariadb_ready=false
