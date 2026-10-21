@@ -34,16 +34,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        // Cloudflare challenges Playwright's headless shell on GitHub-hosted
-        // runners. Full Chromium uses the regular headless implementation and
-        // presents a browser fingerprint that can pass the managed challenge.
-        channel: process.env.CI ? 'chromium' : undefined,
-        launchOptions: process.env.CI
-          ? { args: ['--disable-blink-features=AutomationControlled'] }
-          : undefined,
-      },
+      use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup'],
       testIgnore: /.*\.setup\.ts/,
     },

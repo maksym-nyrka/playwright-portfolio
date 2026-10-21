@@ -10,6 +10,10 @@ const guestFile = '.auth/guest.json';
 const authDir = path.resolve('.auth');
 if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
 
+// Cloudflare can take a while to render and verify the Turnstile widget on
+// GitHub-hosted runners. Give the setup steps enough time to complete it.
+setup.setTimeout(120_000);
+
 /**
  * The demo site is behind Cloudflare. GitHub-hosted runners get an interactive
  * "Verify you are human" challenge before the Angular app is served. Click the
@@ -27,13 +31,23 @@ async function passSecurityVerification(page: Page) {
 
   console.log('Cloudflare challenge detected; completing Turnstile verification');
 
-  const challengeFrame = page.frameLocator('iframe[src*="challenges.cloudflare.com"]');
-  const checkbox = challengeFrame.locator('input[type="checkbox"]');
+  // The iframe's src is sometimes assigned after the frame is created, so
+  // frameLocator cannot always find it. Locate the challenge frame by URL.
+  let challengeFrame = page.frames().find(frame => frame.url().includes('challenges.cloudflare.com'));
+  for (let attempt = 0; !challengeFrame && attempt < 30; attempt++) {
+    await page.waitForTimeout(1_000);
+    challengeFrame = page.frames().find(frame => frame.url().includes('challenges.cloudflare.com'));
+  }
 
-  await checkbox.waitFor({ state: 'visible', timeout: 15000 });
+  if (!challengeFrame) {
+    throw new Error('Cloudflare challenge frame did not load');
+  }
+
+  const checkbox = challengeFrame.locator('input[type="checkbox"], [role="checkbox"]').first();
+  await checkbox.waitFor({ state: 'visible', timeout: 45_000 });
   await checkbox.click();
 
-  await expect(emailInput).toBeVisible({ timeout: 30000 });
+  await expect(emailInput).toBeVisible({ timeout: 45_000 });
 }
 
 setup('authenticate admin', async ({ page, baseURL }) => {
