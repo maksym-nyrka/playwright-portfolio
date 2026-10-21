@@ -165,6 +165,6 @@ The project includes a ready-to-run GitHub Actions workflow ([`.github/workflows
 
 CI uses a local Toolshop instance because GitHub-hosted runner IPs are challenged by Cloudflare before the live demo loads. Local runs still default to `https://practicesoftwaretesting.com`; set `BASE_URL=http://localhost:4200` and `API_BASE_URL=http://localhost:8091` to point them at the local stack.
 
-The local stack is pinned to the v5-era `2.3` images. The current `latest` UI sends product-list requests with the `QUERY` method and other v6 behavior the suite does not target, while `2.3` matches the v5 live demo. The API runs with `php artisan serve --no-reload` and four workers so its file watcher cannot restart the server mid-test.
+The local stack runs the current `latest` Toolshop images. The UI sends product searches with the HTTP `QUERY` method, which PHP's built-in server (`php -S` / `artisan serve`) answers with `501 Not Implemented`. The API therefore runs under `php-fpm` behind nginx (`docker/nginx.conf`), which passes `QUERY`, its headers and its JSON body through to Laravel unchanged.
 
 Visual regression specs are excluded from the Linux CI job because the committed baselines are macOS-only (`*-chromium-darwin.png`). Run `npm test` locally to exercise them, or add Linux baselines to enable them in CI.

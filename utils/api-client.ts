@@ -102,31 +102,11 @@ export class ApiClient {
       headers['Authorization'] = `Bearer ${options.token}`;
     }
 
-    let response: APIResponse;
-    try {
-      response = await this.request.fetch(`${baseUrl}${endpoint}`, {
-        method,
-        data: options.data,
-        headers,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      // PHP's built-in server sends a keep-alive terminator that Playwright's
-      // strict HTTP parser treats as data after `Connection: close` on 204.
-      // The caller verifies the deletion with a follow-up GET, so treat it as
-      // the 204 the server actually sent.
-      if (
-        method === 'DELETE' &&
-        (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) &&
-        message.includes('Connection: close')
-      ) {
-        return {
-          response: { ok: () => true, status: () => 204 } as unknown as APIResponse,
-          body: {} as T,
-        };
-      }
-      throw error;
-    }
+    const response = await this.request.fetch(`${baseUrl}${endpoint}`, {
+      method,
+      data: options.data,
+      headers,
+    });
 
     if (response.status() === 204 || response.headers()['content-length'] === '0') {
       return { response, body: {} as T };

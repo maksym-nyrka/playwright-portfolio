@@ -12,17 +12,16 @@ services:
       timeout: 5s
       retries: 30
 
+  # php-fpm is the API image's native runtime; it accepts any HTTP method,
+  # including the QUERY requests the current UI sends.
   laravel-api:
-    image: testsmith/practice-software-testing-${SPRINT:-sprint5}-api:${TOOLSHOP_VERSION:-2.3}
-    ports:
-      - "8091:8091"
+    image: testsmith/practice-software-testing-${SPRINT:-sprint5}-api:${TOOLSHOP_VERSION:-latest}
     command: >
       sh -c "sed -i 's/^DB_HOST=.*/DB_HOST=mariadb/' /var/www/.env &&
              sed -i 's/^DB_PORT=.*/DB_PORT=3306/' /var/www/.env &&
-             php artisan serve --host=0.0.0.0 --port=8091 --no-reload"
+             exec php-fpm"
     environment:
       PHP_OPCACHE_VALIDATE_TIMESTAMPS: "1"
-      PHP_CLI_SERVER_WORKERS: "4"
       DB_PORT: "3306"
       DB_HOST: mariadb
       host: localhost
@@ -35,11 +34,22 @@ services:
       mariadb:
         condition: service_healthy
 
+  # Public entry point for the API. PHP's built-in server cannot route QUERY,
+  # so nginx proxies to php-fpm. See docker/nginx.conf.
+  web:
+    image: nginx:alpine
+    ports:
+      - "8091:8091"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - laravel-api
+
   angular-ui:
-    image: testsmith/practice-software-testing-${SPRINT:-sprint5}-ui:${TOOLSHOP_VERSION:-2.3}
+    image: testsmith/practice-software-testing-${SPRINT:-sprint5}-ui:${TOOLSHOP_VERSION:-latest}
     ports:
       - "4200:4200"
     command: >
       bash -c "ng serve --host 0.0.0.0 --port 4200"
     depends_on:
-      - laravel-api
+      - web
