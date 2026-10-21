@@ -1,6 +1,6 @@
 # 🎭 Playwright Automation Portfolio
 
-[![Playwright Tests](https://github.com/maksym-nyrka/playwright-portfolio/actions/workflows/playwright.yml/badge.svg)](https://github.com/maksym-nyrka/playwright-portfolio/actions/workflows/playwright.yml)
+[![Playwright Tests CI](https://img.shields.io/badge/Playwright%20Tests-CI-2088FF?logo=githubactions&logoColor=white)](https://github.com/maksym-nyrka/playwright-portfolio/actions/workflows/playwright.yml)
 [![Playwright](https://img.shields.io/badge/Playwright-v1.63.0-45ba4b?logo=playwright)](https://playwright.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4.5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green?logo=node.js)](https://nodejs.org/)
