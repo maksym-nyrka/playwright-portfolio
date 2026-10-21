@@ -5,9 +5,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE=(docker compose -p playwright-ci -f "$ROOT_DIR/docker-compose.ci.yml")
 
 export SPRINT="${SPRINT:-sprint5}"
-export DISABLE_LOGGING="true"
 
 cleanup() {
+  echo "=== Laravel API logs ==="
+  "${COMPOSE[@]}" logs --no-color --tail=300 laravel-api || true
+  echo "=== Angular UI logs ==="
+  "${COMPOSE[@]}" logs --no-color --tail=100 angular-ui || true
   echo "Stopping local Toolshop stack..."
   "${COMPOSE[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
 }
