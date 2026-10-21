@@ -1,0 +1,55 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      # Visual baselines are currently macOS-only (`*-chromium-darwin.png`),
+      # so screenshot assertions cannot pass on the Linux runner. Run the
+      # visual specs locally, or add `-linux` baselines to enable them here.
+      - name: Run Playwright tests
+        run: npm test -- --grep-invert "Visual Regression"
+        env:
+          BASE_URL: https://practicesoftwaretesting.com
+          CI: true
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
