@@ -19,7 +19,7 @@ services:
     command: >
       sh -c "sed -i 's/^DB_HOST=.*/DB_HOST=mariadb/' /var/www/.env &&
              sed -i 's/^DB_PORT=.*/DB_PORT=3306/' /var/www/.env &&
-             php artisan serve --host=0.0.0.0 --port=8091"
+             php artisan serve --host=0.0.0.0 --port=8091 --no-reload"
     environment:
       PHP_OPCACHE_VALIDATE_TIMESTAMPS: "1"
       PHP_CLI_SERVER_WORKERS: "4"
