@@ -7,8 +7,6 @@ import { test, expect } from '../../fixtures/pages.fixture';
  */
 const PRODUCT_NAME = 'Combination Pliers';
 
-// Keep "Visual Regression" out of the title: the CI workflow filters that
-// phrase with --grep-invert, so a matching title would skip these specs.
 test.describe('Visual Snapshots: Product Page', () => {
   test.beforeEach(async ({ page, homePage, productPage }) => {
     /**

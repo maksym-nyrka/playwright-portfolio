@@ -167,4 +167,4 @@ CI uses a local Toolshop instance because GitHub-hosted runner IPs are challenge
 
 The local stack runs the current `latest` Toolshop images. The UI sends product searches with the HTTP `QUERY` method, which PHP's built-in server (`php -S` / `artisan serve`) answers with `501 Not Implemented`. The API therefore runs under `php-fpm` behind nginx (`docker/nginx.conf`), which passes `QUERY`, its headers and its JSON body through to Laravel unchanged.
 
-Visual regression specs run in CI against the local Toolshop stack using the committed Linux baselines (`*-chromium-linux.png`); the macOS baselines (`*-chromium-darwin.png`) remain for local runs against the live demo. The suites are titled `Visual Snapshots` so the workflow's `--grep-invert "Visual Regression"` filter does not skip them.
+Visual regression specs run in CI against the local Toolshop stack using the committed Linux baselines (`*-chromium-linux.png`); the macOS baselines (`*-chromium-darwin.png`) remain for local runs against the live demo.

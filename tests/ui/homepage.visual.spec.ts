@@ -26,8 +26,6 @@ async function waitForVisibleImages(page: Page) {
     .toBe(true);
 }
 
-// Keep "Visual Regression" out of the title: the CI workflow filters that
-// phrase with --grep-invert, so a matching title would skip these specs.
 test.describe('Visual Snapshots: Home Page', () => {
   test('should match the visual baseline for the home page', async ({ page, homePage }) => {
     await homePage.goto();
