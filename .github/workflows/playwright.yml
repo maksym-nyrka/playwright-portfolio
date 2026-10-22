@@ -36,11 +36,8 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
 
-      # Visual baselines are currently macOS-only (`*-chromium-darwin.png`),
-      # so screenshot assertions cannot pass on the Linux runner. Run the
-      # visual specs locally, or add `-linux` baselines to enable them here.
       - name: Run Playwright tests
-        run: npm test -- --grep-invert "Visual Regression"
+        run: npm test
         env:
           BASE_URL: https://practicesoftwaretesting.com
           CI: true
