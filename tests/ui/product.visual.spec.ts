@@ -7,7 +7,9 @@ import { test, expect } from '../../fixtures/pages.fixture';
  */
 const PRODUCT_NAME = 'Combination Pliers';
 
-test.describe('Visual Regression: Product Page', () => {
+// Keep "Visual Regression" out of the title: the CI workflow filters that
+// phrase with --grep-invert, so a matching title would skip these specs.
+test.describe('Visual Snapshots: Product Page', () => {
   test.beforeEach(async ({ page, homePage, productPage }) => {
     /**
      * Stock levels change as visitors buy products on the shared demo. The

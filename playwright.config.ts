@@ -9,6 +9,16 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
 
+  // TEMP (baseline generation): keep CI snapshots inside the uploaded report
+  // artifact so the Linux baselines can be downloaded and committed.
+  ...(process.env.CI
+    ? {
+        snapshotPathTemplate:
+          'playwright-report/snapshots/{arg}{-projectName}{-snapshotSuffix}{ext}',
+        updateSnapshots: 'missing',
+      }
+    : {}),
+
   /**
    * Playwright feature: globalSetup
    * Runs once before any test project. Pre-authenticates both roles
