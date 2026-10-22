@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4.5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green?logo=node.js)](https://nodejs.org/)
 
-An enterprise-grade end-to-end test automation portfolio built with **Playwright** and **TypeScript**, targeting the [Practice Software Testing (Toolshop v5)](https://practicesoftwaretesting.com) Angular Single Page Application and its backend REST API.
+An enterprise-grade end-to-end test automation portfolio built with **Playwright** and **TypeScript**, targeting the [Practice Software Testing Toolshop](https://practicesoftwaretesting.com) Angular Single Page Application and its backend REST API.
 
 ---
 
@@ -32,6 +32,10 @@ playwright-portfolio/
 ├── .github/
 │   └── workflows/
 │       └── playwright.yml          # GitHub Actions CI pipeline
+├── docker/
+│   └── nginx.conf                  # nginx → php-fpm proxy for the local API
+├── scripts/
+│   └── start-toolshop.sh           # Starts, seeds and tears down the local Docker stack
 ├── fixtures/                       # Custom Playwright test fixtures
 │   ├── auth.fixture.ts             # Worker-scoped & test-scoped API fixtures
 │   └── pages.fixture.ts            # Page Object Model fixture bindings
@@ -58,6 +62,7 @@ playwright-portfolio/
 ├── utils/                          # Utilities & Helpers
 │   ├── api-client.ts               # Typed REST API client
 │   └── test-data.ts                # Synthetic test data factories
+├── docker-compose.ci.yml           # MariaDB + Laravel API + nginx + Angular UI
 ├── playwright.config.ts            # Playwright Test configuration
 ├── tsconfig.json                   # TypeScript configuration
 └── package.json                    # Project dependencies & scripts
@@ -70,6 +75,7 @@ playwright-portfolio/
 ### 1. Prerequisites
 - **Node.js**: v20 or higher
 - **npm**: v9 or higher
+- **Docker** (optional): Docker Desktop or Docker Engine with Compose v2, only needed for the local Toolshop stack (see [Local Toolshop Stack](#4-local-toolshop-stack-optional-docker))
 
 ### 2. Installation
 Clone the repository and install dependencies:
@@ -92,11 +98,57 @@ cp .env.example .env
 Default credentials for the demo sandbox are pre-configured:
 ```env
 BASE_URL=https://practicesoftwaretesting.com
+API_BASE_URL=https://api.practicesoftwaretesting.com
 CUSTOMER_EMAIL=customer@practicesoftwaretesting.com
 CUSTOMER_PASSWORD=welcome01
 ADMIN_EMAIL=admin@practicesoftwaretesting.com
 ADMIN_PASSWORD=welcome01
 ```
+
+### 4. Local Toolshop Stack (Optional, Docker)
+
+The default local configuration targets the public demo. To run the same isolated stack CI uses, you need Docker and the services defined in [`docker-compose.ci.yml`](docker-compose.ci.yml):
+
+| Service | Host access | Purpose |
+|---|---|---|
+| `angular-ui` | `http://localhost:4200` | Angular storefront (`ng serve`) |
+| `web` | `http://localhost:8091` | nginx API entry point |
+| `laravel-api` | internal `:9000` | Laravel API on php-fpm |
+| `mariadb` | internal `:3306` | MariaDB 10.6 |
+
+The simplest way to start it is the helper script, which starts the stack, waits for MariaDB/API/UI, seeds the database, and tears everything down when it exits:
+
+```bash
+bash scripts/start-toolshop.sh
+```
+
+Run it in one terminal, then point Playwright at the stack from another:
+
+```bash
+BASE_URL=http://localhost:4200 API_BASE_URL=http://localhost:8091 npm test
+```
+
+Alternatively, manage the containers yourself:
+
+```bash
+docker compose -p playwright-ci -f docker-compose.ci.yml up -d --pull missing
+
+# Wait for the API to become ready before seeding.
+until curl -fsS http://localhost:8091/status >/dev/null; do sleep 2; done
+
+docker compose -p playwright-ci -f docker-compose.ci.yml exec -T laravel-api \
+  php artisan migrate:refresh --seed --force
+```
+
+Stop the stack and remove its database volume with:
+
+```bash
+docker compose -p playwright-ci -f docker-compose.ci.yml down -v --remove-orphans
+```
+
+The Toolshop images default to `testsmith/practice-software-testing-sprint5-{api,ui}:latest`. Set `TOOLSHOP_VERSION=<tag>` (and optionally `SPRINT=<name>`) to pin a different release. This stack is for tests only; the seed command resets the database.
+
+The API runs under php-fpm behind nginx because the UI sends product searches with the HTTP `QUERY` method, which PHP's built-in server (`php -S` / `artisan serve`) answers with `501 Not Implemented`. The `web` service proxies `QUERY`, its headers and JSON body to Laravel; see [`docker/nginx.conf`](docker/nginx.conf).
 
 ---
 
@@ -147,6 +199,8 @@ ADMIN_PASSWORD=welcome01
 - Dynamic element masking (prices, live inventory, rotating content) to prevent flaky diffs.
 - Component-level snapshots (e.g., CO₂ rating badges).
 
+Snapshot files are platform-specific. The committed `*-chromium-linux.png` baselines are generated from the local Docker stack and used by CI; the `*-chromium-darwin.png` baselines target the live demo. Running the visual specs against the Docker stack on macOS will compare against the live-demo baselines, so expect diffs unless you intentionally regenerate them with `--update-snapshots`.
+
 ### 6. Advanced Playwright Features (`tests/ui/multi-tab.spec.ts`, `tests/ui/downloads.spec.ts`, `tests/performance/performance.spec.ts`)
 - **Multi-Tab**: Session state propagation across multiple tabs in a single `BrowserContext` and popup handling.
 - **Downloads**: Verifying filename suggestions, saving streams to isolated test directories, and asserting file contents.
@@ -165,6 +219,6 @@ The project includes a ready-to-run GitHub Actions workflow ([`.github/workflows
 
 CI uses a local Toolshop instance because GitHub-hosted runner IPs are challenged by Cloudflare before the live demo loads. Local runs still default to `https://practicesoftwaretesting.com`; set `BASE_URL=http://localhost:4200` and `API_BASE_URL=http://localhost:8091` to point them at the local stack.
 
-The local stack runs the current `latest` Toolshop images. The UI sends product searches with the HTTP `QUERY` method, which PHP's built-in server (`php -S` / `artisan serve`) answers with `501 Not Implemented`. The API therefore runs under `php-fpm` behind nginx (`docker/nginx.conf`), which passes `QUERY`, its headers and its JSON body through to Laravel unchanged.
+The CI stack uses the current `latest` Toolshop images. See [Local Toolshop Stack](#4-local-toolshop-stack-optional-docker) for the service layout, manual startup commands, and the nginx/php-fpm `QUERY` routing.
 
 Visual regression specs run in CI against the local Toolshop stack using the committed Linux baselines (`*-chromium-linux.png`); the macOS baselines (`*-chromium-darwin.png`) remain for local runs against the live demo.
