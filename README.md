@@ -146,7 +146,7 @@ Stop the stack and remove its database volume with:
 docker compose -p playwright-ci -f docker-compose.ci.yml down -v --remove-orphans
 ```
 
-The Toolshop images default to `testsmith/practice-software-testing-sprint5-{api,ui}:latest`. Set `TOOLSHOP_VERSION=<tag>` (and optionally `SPRINT=<name>`) to pin a different release. This stack is for tests only; the seed command resets the database.
+The Toolshop images are pinned to `2.5`, the release the committed Linux visual baselines were generated against. Set `TOOLSHOP_VERSION=<tag>` (and optionally `SPRINT=<name>`) to run a different release, or change the default in `docker-compose.ci.yml` when you deliberately adopt a new one. This stack is for tests only; the seed command resets the database.
 
 The API runs under php-fpm behind nginx because the UI sends product searches with the HTTP `QUERY` method, which PHP's built-in server (`php -S` / `artisan serve`) answers with `501 Not Implemented`. The `web` service proxies `QUERY`, its headers and JSON body to Laravel; see [`docker/nginx.conf`](docker/nginx.conf).
 
@@ -199,7 +199,7 @@ The API runs under php-fpm behind nginx because the UI sends product searches wi
 - Dynamic element masking (prices, live inventory, rotating content) to prevent flaky diffs.
 - Component-level snapshots (e.g., CO₂ rating badges).
 
-Snapshot files are platform-specific. The committed `*-chromium-linux.png` baselines are generated from the local Docker stack and used by CI; the `*-chromium-darwin.png` baselines target the live demo. Running the visual specs against the Docker stack on macOS will compare against the live-demo baselines, so expect diffs unless you intentionally regenerate them with `--update-snapshots`.
+Snapshot files are platform-specific. The committed `*-chromium-linux.png` baselines are generated from the local Docker stack and used by CI; the `*-chromium-darwin.png` baselines target the live demo. Running the visual specs against the Docker stack on macOS will compare against the live-demo baselines, so expect diffs unless you intentionally regenerate them with `--update-snapshots`. The Linux baselines correspond to the pinned `2.5` Toolshop release; review and regenerate them if you bump the UI image.
 
 ### 6. Advanced Playwright Features (`tests/ui/multi-tab.spec.ts`, `tests/ui/downloads.spec.ts`, `tests/performance/performance.spec.ts`)
 - **Multi-Tab**: Session state propagation across multiple tabs in a single `BrowserContext` and popup handling.
@@ -219,6 +219,6 @@ The project includes a ready-to-run GitHub Actions workflow ([`.github/workflows
 
 CI uses a local Toolshop instance because GitHub-hosted runner IPs are challenged by Cloudflare before the live demo loads. Local runs still default to `https://practicesoftwaretesting.com`; set `BASE_URL=http://localhost:4200` and `API_BASE_URL=http://localhost:8091` to point them at the local stack.
 
-The CI stack uses the current `latest` Toolshop images. See [Local Toolshop Stack](#4-local-toolshop-stack-optional-docker) for the service layout, manual startup commands, and the nginx/php-fpm `QUERY` routing.
+The CI stack uses the pinned `2.5` Toolshop images, so upstream `latest` updates do not change CI until the pin is bumped deliberately. See [Local Toolshop Stack](#4-local-toolshop-stack-optional-docker) for the service layout, manual startup commands, and the nginx/php-fpm `QUERY` routing.
 
 Visual regression specs run in CI against the local Toolshop stack using the committed Linux baselines (`*-chromium-linux.png`); the macOS baselines (`*-chromium-darwin.png`) remain for local runs against the live demo.
